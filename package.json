@@ -1,0 +1,26 @@
+{
+	"name": "infinite-uploads-video",
+	"version": "0.1.0",
+	"description": "A Gutenberg block to show your pride! This block enables you to type text and style it with the color font Gilbert from Type with Pride.",
+	"author": "The WordPress Contributors",
+	"license": "GPL-2.0-or-later",
+	"main": "build/index.js",
+	"scripts": {
+		"build": "wp-scripts build",
+		"format": "wp-scripts format",
+		"lint:css": "wp-scripts lint-style",
+		"lint:js": "wp-scripts lint-js",
+		"packages-update": "wp-scripts packages-update",
+		"plugin-zip": "wp-scripts plugin-zip",
+		"start": "wp-scripts start"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^23.6.0"
+	},
+	"dependencies": {
+		"@uppy/core": "^2.3.2",
+		"@uppy/react": "^2.2.2",
+		"@uppy/tus": "^2.4.1",
+		"js-sha256": "^0.9.0"
+	}
+}
