@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name:       Bunnytest
- * Description:       A Gutenberg block to show your pride! This block enables you to type text and style it with the color font Gilbert from Type with Pride.
+ * Description:       A Gutenberg block to demonstrate the uploading, encoding, and embedding of video files using the Bunny.net API.
  * Version:           0.1.0
  * Requires at least: 5.9
  * Requires PHP:      7.0
- * Author:            The WordPress Contributors
+ * Author:            UglyRobot
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       bunnytest
