@@ -11,22 +11,23 @@
  *
  * @see https://developer.wordpress.org/block-editor/packages/packages-block-editor/#useBlockProps
  */
-import { PanelBody, Placeholder, Spinner } from '@wordpress/components';
-import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { __, sprintf } from '@wordpress/i18n';
-import { useRef, useEffect, useState } from '@wordpress/element';
+import { PanelBody, Placeholder, Spinner } from "@wordpress/components"
+import { useBlockProps, InspectorControls } from "@wordpress/block-editor"
+import { __, sprintf } from "@wordpress/i18n"
+import { useRef, useEffect, useState } from "@wordpress/element"
 
-
-import Uppy from '@uppy/core'
-import Tus from '@uppy/tus'
-import { DragDrop, StatusBar, useUppy } from '@uppy/react'
-import UppyCreateVid from './edit-uppy-plugin'
-import VideoCommonSettings from './edit-common-settings';
-import { sha256 } from 'js-sha256';
+import Uppy from "@uppy/core"
+import Tus from "@uppy/tus"
+import { DragDrop, StatusBar, useUppy } from "@uppy/react"
+import UppyCreateVid from "./edit-uppy-plugin"
+import VideoCommonSettings from "./edit-common-settings"
+import { sha256 } from "js-sha256"
 
 //pulled from wp_localize_script later
-const LIBRARY_ID = BUNNYTEST.libraryId;
-const API_KEY    = BUNNYTEST.apiKey;
+// const LIBRARY_ID = BUNNYTEST.libraryId;
+// const API_KEY    = BUNNYTEST.apiKey;
+const LIBRARY_ID = "26801"
+const API_KEY = "099b0129-957f-47d1-85797b136a12-5868-4da0"
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -40,8 +41,8 @@ const API_KEY    = BUNNYTEST.apiKey;
  *
  * @return {WPElement} Element to render.
  */
-export default function Edit( { attributes, setAttributes } ) {
-	const blockProps = useBlockProps();
+export default function Edit({ attributes, setAttributes }) {
+  const blockProps = useBlockProps()
 
   /* Possible video statuses
   Created = 0
@@ -52,41 +53,40 @@ export default function Edit( { attributes, setAttributes } ) {
   Error = 5
   UploadFailed = 6
   */
-  const [videoStatus, setVideoStatus] = useState(0);
+  const [videoStatus, setVideoStatus] = useState(0)
 
-  const [encodeProgress, setEncodeProgress] = useState(0);
-  const [isUploading, setUploading] = useState(false);
-  const [intervalId, setIntervalId] = useState(0);
+  const [encodeProgress, setEncodeProgress] = useState(0)
+  const [isUploading, setUploading] = useState(false)
+  const [intervalId, setIntervalId] = useState(0)
 
-  useEffect( () => {
-    if ( attributes.video_id ) {
-      getVideo();
+  useEffect(() => {
+    if (attributes.video_id) {
+      getVideo()
     }
 
     //clear interval on destroy
-    return () => stopPollVideo();
-  }, [] );
-
+    return () => stopPollVideo()
+  }, [])
   const startPollVideo = () => {
-    console.log('Maybe skip start interval, existing:',intervalId)
+    console.log("Maybe skip start interval, existing:", intervalId)
     if (intervalId) {
-      console.log('Skip start interval, existing:',intervalId)
-      return;
+      console.log("Skip start interval, existing:", intervalId)
+      return
     }
 
-    const newIntervalId = setInterval(() => {
-      getVideo();
-    }, 10000);
-    console.log('creating new interval:',newIntervalId)
-    setIntervalId(newIntervalId);
+    const newIntervalId = setTimeout(() => {
+      getVideo()
+      console.log("Polling video")
+    }, 10000)
+    console.log("creating new interval:", newIntervalId)
+    setIntervalId(newIntervalId)
   }
 
   const stopPollVideo = () => {
-    console.log('Clearing interval:',intervalId)
-    if(intervalId) {
-
-      clearInterval(intervalId);
-      setIntervalId(0);
+    console.log("Clearing interval:", intervalId)
+    if (intervalId) {
+      clearTimeout(intervalId)
+      setIntervalId(0)
     }
   }
 
@@ -95,144 +95,180 @@ export default function Edit( { attributes, setAttributes } ) {
       debug: true,
       restrictions: {
         maxNumberOfFiles: 1,
-        allowedFileTypes: ['video/*'],
+        allowedFileTypes: ["video/*"],
       },
       autoProceed: true,
       allowMultipleUploadBatches: false,
       onBeforeUpload: (files) => {
         //TODO trigger error if video_id is null
-      }
+      },
     })
       .use(Tus, {
-        endpoint: 'https://video.bunnycdn.com/tusupload',
+        endpoint: "https://video.bunnycdn.com/tusupload",
         retryDelays: [0, 1000, 3000, 5000],
         onBeforeRequest: (req) => {
           //TO FIX: attributes.video_id is undefined
-          console.log('VideoId props:', blockProps.video_id );
-          if ( blockProps.video_id ) {
-            setAttributes({video_id: blockProps.video_id});
-            attributes.video_id = blockProps.video_id;//I don't know why this is needed
+          console.log("VideoId props:", blockProps.video_id)
+          if (blockProps.video_id) {
+            setAttributes({ video_id: blockProps.video_id })
+            attributes.video_id = blockProps.video_id //I don't know why this is needed
           }
-          console.log('VideoId attr:', attributes.video_id );
+          console.log("VideoId attr:", attributes.video_id)
 
-          let expiration = Math.floor(( Date.now() / 1000 ) + 3600 ).toString(); // 1 hour from now
-          req.setHeader('AuthorizationSignature', sha256(LIBRARY_ID + API_KEY + expiration + blockProps.video_id));
-          req.setHeader('AuthorizationExpire', expiration );
-          req.setHeader('VideoId', blockProps.video_id );
-          req.setHeader('LibraryId', LIBRARY_ID );
+          let expiration = Math.floor(Date.now() / 1000 + 3600).toString() // 1 hour from now
+          req.setHeader(
+            "AuthorizationSignature",
+            sha256(LIBRARY_ID + API_KEY + expiration + blockProps.video_id)
+          )
+          req.setHeader("AuthorizationExpire", expiration)
+          req.setHeader("VideoId", blockProps.video_id)
+          req.setHeader("LibraryId", LIBRARY_ID)
         },
       })
-      .use(UppyCreateVid, {libraryId: LIBRARY_ID, apiKey: API_KEY, blockProps}) //our custom plugin
+      .use(UppyCreateVid, {
+        libraryId: LIBRARY_ID,
+        apiKey: API_KEY,
+        blockProps,
+      }) //our custom plugin
+  })
 
-  });
-
-  uppy.on('upload', (data) => {
+  uppy.on("upload", (data) => {
     // data object consists of `id` with upload ID and `fileIDs` array
     // with file IDs in current upload
     // data: { id, fileIDs }
-    setUploading(true);
+    setUploading(true)
   })
 
-  uppy.on('complete', result => {
-    console.log('successful files:', result.successful)
-    console.log('failed files:', result.failed)
-    setUploading(false);
-    getVideo();
+  uppy.on("complete", (result) => {
+    console.log("successful files:", result.successful)
+    console.log("failed files:", result.failed)
+    setUploading(false)
+    getVideo()
   })
 
   function getVideo() {
     const options = {
-      method: 'GET',
+      method: "GET",
       headers: {
-        Accept: 'application/json',
-        AccessKey: API_KEY
+        Accept: "application/json",
+        AccessKey: API_KEY,
       },
-    };
+    }
 
-    fetch(`https://video.bunnycdn.com/library/${LIBRARY_ID}/videos/${attributes.video_id}`, options)
+    fetch(
+      `https://video.bunnycdn.com/library/${LIBRARY_ID}/videos/${attributes.video_id}`,
+      options
+    )
       .then((response) => response.json())
       .then((data) => {
-        console.log("Video:", data);
-        setVideoStatus(data.status);
-        setEncodeProgress(data.encodeProgress);
+        console.log("Video:", data)
+        setVideoStatus(data.status)
+        setEncodeProgress(data.encodeProgress)
 
-        if (data.status === 4 ) {
-          stopPollVideo();
+        if (data.status === 4) {
+          setIntervalId(100)
+          stopPollVideo()
         } else {
-          startPollVideo();
+          startPollVideo()
         }
       })
       .catch((error) => {
-        console.error(error);
-      });
+        console.error(error)
+      })
   }
 
-  if ( ! isUploading && attributes.video_id ) {
-    if ( videoStatus === 4 ) {
+  if (!isUploading && attributes.video_id) {
+    if (videoStatus === 4) {
       return (
         <div {...blockProps}>
-          <figure class="wp-embed-aspect-16-9 wp-has-aspect-ratio wp-block-embed is-type-video">
-            <div class="wp-block-embed__wrapper">
-              <iframe src={`https://iframe.mediadelivery.net/embed/26801/${attributes.video_id}?autoplay=${attributes.autoplay}&preload=${attributes.preload}&loop=${attributes.loop}&muted=${attributes.muted}`} loading="lazy" width="864" height="486" className="components-sandbox"
-                      sandbox="allow-scripts allow-same-origin allow-presentation" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowFullScreen="true"></iframe>
+          <figure class='wp-embed-aspect-16-9 wp-has-aspect-ratio wp-block-embed is-type-video'>
+            <div class='wp-block-embed__wrapper'>
+              <iframe
+                src={`https://iframe.mediadelivery.net/embed/26801/${attributes.video_id}?autoplay=${attributes.autoplay}&preload=${attributes.preload}&loop=${attributes.loop}&muted=${attributes.muted}`}
+                loading='lazy'
+                width='864'
+                height='486'
+                className='components-sandbox'
+                sandbox='allow-scripts allow-same-origin allow-presentation'
+                allow='accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;'
+                allowFullScreen='true'
+              ></iframe>
             </div>
           </figure>
         </div>
-      );
+      )
     } else {
-      let label = '';
-      if ( videoStatus === 3 ) {
-        label = sprintf( __( 'Video %d%% encoded...', 'infinite-uploads' ), encodeProgress );
+      let label = ""
+      if (videoStatus === 3) {
+        label = sprintf(
+          __("Video %d%% encoded...", "infinite-uploads"),
+          encodeProgress
+        )
       } else {
-        label = sprintf( __( 'Video %d%% processed...', 'infinite-uploads' ), encodeProgress );
+        label = sprintf(
+          __("Video %d%% processed...", "infinite-uploads"),
+          encodeProgress
+        )
       }
       return (
         <div {...blockProps}>
           <Placeholder>
-            { videoStatus === 3 ? <img alt="Video thumbnail" src={`https://vz-a8691a32-d3c.b-cdn.net/${attributes.video_id}/thumbnail.jpg`} /> : '' }
+            {videoStatus === 3 ? (
+              <img
+                alt='Video thumbnail'
+                src={`https://vz-a8691a32-d3c.b-cdn.net/${attributes.video_id}/thumbnail.jpg`}
+              />
+            ) : (
+              ""
+            )}
             <Spinner progress={encodeProgress} /> {label}
           </Placeholder>
         </div>
-      );
+      )
     }
   } else {
     return (
-    <div {...blockProps}>
-      <div className="uppy-wrapper">
-      { ! isUploading ?
-        <DragDrop
-          width="100%"
-          height="100%"
-          // assuming `props.uppy` contains an Uppy instance:
-          uppy={uppy}
-          locale={{
-            strings: {
-              // Text to show on the droppable area.
-              // `%{browse}` is replaced with a link that opens the system file selection dialog.
-              dropHereOr: __( 'Drop video file here or %{browse}.', 'infinite-uploads' ),
-              // Used as the label for the link that opens the system file selection dialog.
-              browse: __( 'browse', 'infinite-uploads'),
-            },
-          }}
-        />
-        : ''}
-      <StatusBar
-        // assuming `props.uppy` contains an Uppy instance:
-        uppy={uppy}
-        hideUploadButton={false}
-        hideAfterFinish={true}
-        showProgressDetails
-      />
-      </div>
-      <InspectorControls>
-        <PanelBody title={ __( 'Settings' ) }>
-          <VideoCommonSettings
-            setAttributes={ setAttributes }
-            attributes={ attributes }
+      <div {...blockProps}>
+        <div className='uppy-wrapper'>
+          {!isUploading ? (
+            <DragDrop
+              width='100%'
+              height='100%'
+              // assuming `props.uppy` contains an Uppy instance:
+              uppy={uppy}
+              locale={{
+                strings: {
+                  // Text to show on the droppable area.
+                  // `%{browse}` is replaced with a link that opens the system file selection dialog.
+                  dropHereOr: __(
+                    "Drop video file here or %{browse}.",
+                    "infinite-uploads"
+                  ),
+                  // Used as the label for the link that opens the system file selection dialog.
+                  browse: __("browse", "infinite-uploads"),
+                },
+              }}
+            />
+          ) : (
+            ""
+          )}
+          <StatusBar
+            // assuming `props.uppy` contains an Uppy instance:
+            uppy={uppy}
+            hideUploadButton={false}
+            hideAfterFinish={true}
+            showProgressDetails
           />
-        </PanelBody>
-      </InspectorControls>
-    </div>
-  );
+        </div>
+        <InspectorControls>
+          <PanelBody title={__("Settings")}>
+            <VideoCommonSettings
+              setAttributes={setAttributes}
+              attributes={attributes}
+            />
+          </PanelBody>
+        </InspectorControls>
+      </div>
+    )
   }
 }
