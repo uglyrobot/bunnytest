@@ -25,8 +25,7 @@ import VideoCommonSettings from './edit-common-settings';
 import { sha256 } from 'js-sha256';
 
 //pulled from wp_localize_script later
-const LIBRARY_ID = BUNNYTEST.libraryId;
-const API_KEY    = BUNNYTEST.apiKey;
+
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -41,6 +40,9 @@ const API_KEY    = BUNNYTEST.apiKey;
  * @return {WPElement} Element to render.
  */
 export default function Edit( { attributes, setAttributes } ) {
+  const LIBRARY_ID = BUNNYTEST.libraryId;
+  const API_KEY    = BUNNYTEST.apiKey;
+
 	const blockProps = useBlockProps();
 
   /* Possible video statuses
@@ -74,7 +76,7 @@ export default function Edit( { attributes, setAttributes } ) {
       return;
     }
 
-    const newIntervalId = setInterval(() => {
+    const newIntervalId = setTimeout(() => {
       getVideo();
     }, 10000);
     console.log('creating new interval:',newIntervalId)
@@ -85,7 +87,7 @@ export default function Edit( { attributes, setAttributes } ) {
     console.log('Clearing interval:',intervalId)
     if(intervalId) {
 
-      clearInterval(intervalId);
+      clearTimeout(intervalId);
       setIntervalId(0);
     }
   }
