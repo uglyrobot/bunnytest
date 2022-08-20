@@ -24,10 +24,6 @@ import VideoCommonSettings from "./edit-common-settings"
 import { sha256 } from "js-sha256"
 
 //pulled from wp_localize_script later
-// const LIBRARY_ID = BUNNYTEST.libraryId;
-// const API_KEY    = BUNNYTEST.apiKey;
-const LIBRARY_ID = "26801"
-const API_KEY = "099b0129-957f-47d1-85797b136a12-5868-4da0"
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -42,6 +38,8 @@ const API_KEY = "099b0129-957f-47d1-85797b136a12-5868-4da0"
  * @return {WPElement} Element to render.
  */
 export default function Edit({ attributes, setAttributes }) {
+  const LIBRARY_ID = BUNNYTEST.libraryId
+  const API_KEY = BUNNYTEST.apiKey
   const blockProps = useBlockProps()
 
   /* Possible video statuses
@@ -166,7 +164,6 @@ export default function Edit({ attributes, setAttributes }) {
         setEncodeProgress(data.encodeProgress)
 
         if (data.status === 4) {
-          setIntervalId(100)
           stopPollVideo()
         } else {
           startPollVideo()
